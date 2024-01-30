@@ -1,4 +1,11 @@
 #function
+#######准备工作：
+#######在R打开后新建文件R script后，要保存并关闭，然后再从文件夹内打开Rscript，才能更改目录。
+
+
+
+
+
 
 ###################
 #function1：GSEnumber_to_visualized_raw_exprSet
@@ -20,7 +27,9 @@ GSEnumber_to_visualize_raw_exprSet <- function(GSE_number){
        file = paste0(GSE_number,'_raw_exprSet.Rdata'))
   return(raw_exprSet)}
 #使用案例：
-GSE42872_raw_exprSet<-GSEnumber_to_visualize_raw_exprSet('GSE42872')
+GSE194261_raw_exprSet<-GSEnumber_to_visualize_raw_exprSet('GSE194261')
+
+
 
 
 ###################
@@ -39,7 +48,8 @@ GSEnumber_to_visualized_excel <- function(studyID,destdir = '.'){
   write.csv(pData,paste0(studyID,'_metadata.csv'))
 }
 #使用案例（在该R脚本的默认文件夹下可以看到csv文件）：
-GSEnumber_to_visualized_excel('GSE42872')
+GSEnumber_to_visualized_excel('GSE194261')
+####注释：元数据（Metadata）文件，是指关于该文件或对象的一切信息都是元数据。
 
 
 
@@ -70,6 +80,41 @@ GSE_42872_ids <- make_GSEs_ids(hugene10sttranscriptclusterSYMBOL)
 
 
 
+################
+#分支function3.1：注释平台文件内找不到对应的R包的处理（https://www.jianshu.com/p/8ffa5b602b9c）
+################
+##失败案例
+#这里试一下这个网站提供的idmap2
+#尝试一：
+#BiocManager::install('idmap2') #这个装都装不了，cran也试过不行。
+#尝试二：
+#BiocManager::install('AnnoProbe') #这个能装，但不知道怎么用
+#插件：
+#先更新一下biocmanager吧。
+#BiocManager::install(version = "devel")
+#尝试三：
+#BiocManager::install('BiocInstaller')
+#BiocInstaller::biocLite('idmap2')
+#install.packages('BiocInstaller')
+#屌用没有。试一下方法二。
+##################
+#成功案例：
+library(GEOquery)
+gpl <- getGEO('GPL17077', destdir=".")
+colnames(Table(gpl)) 
+head(Table(gpl)[,c(1,6,7)])  ## you need to check this , which column do you need 
+write.csv(Table(gpl)[,c(1,6,7)],"GPL17077.csv")
+ids=read.csv('GPL17077.csv')
+GSE_194261_ids = ids
+#做完ids后查看一下，只要有这两列，一列是id，一列是gene_symbol就行。
+#可以再去raw_exprset里面查看一下，随便找一个id复制，去ids里面ctrlF一下，看看有没有。
+#成功，还是这个方法好用，下次都可以直接用这个方法了。
+
+################
+#分支function3.2：raw_exprset做id转换，拆分步骤。
+rownames(GSE194261_raw_exprSet) <- ids$GENE_SYMBOL
+
+
 ###################
 #function4：raw_exprSet_to_final_exprSet
 #输入：function1得到的raw_exprSet以及function3得到的ids。
@@ -88,7 +133,7 @@ raw_exprSet_to_final_exprSet <- function(exprSet,ids){
   return(new_exprSet)
 }
 #使用范例：
-GSE42872_final_exprSet <- raw_exprSet_to_final_exprSet(GSE42872_raw_exprSet,GSE_42872_ids)
+GSE194261_final_exprSet <- raw_exprSet_to_final_exprSet(GSE194261_raw_exprSet,GSE_194261_ids)
 
 
 ###################
@@ -314,8 +359,8 @@ visualize_all_gene_expression_level_by_pheatmap(GSE42872_final_exprSet,GSE_42872
 pick_significant_DEGs_by_fixed_number<- function(fixed_number,nrDEG){
   a = head(rownames(nrDEG),fixed_number)
   a.df <- bitr(gene, fromType = "SYMBOL",
-                  toType = c("ENSEMBL", "ENTREZID"),
-                  OrgDb = org.Hs.eg.db)
+               toType = c("ENSEMBL", "ENTREZID"),
+               OrgDb = org.Hs.eg.db)
   return(a.df)
 }
 GSE_42872_significant_DEGs.df<- pick_significant_DEGs_by_fixed_number(25,GSE_42872_nrDEG)
@@ -349,7 +394,7 @@ GSE_42872_significant_DEGs.df <-pick_significant_DEGs_by_logFC(1.5,GSE_42872_nrD
 kk <- enrichKEGG( gene = GSE_42872_significant_DEGs.df$ENTREZID,
                   organism ='hsa',
                   pvalueCutoff = 0.05
-                    )
+)
 head(kk)[,1:6]
 
 
