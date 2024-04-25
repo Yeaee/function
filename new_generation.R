@@ -1,9 +1,11 @@
+# version info ：24.4.25 ，current Dataset：GSE141595#
+
 #第一步：用getGEO下载数据。
 #说明：先安装BiocManager，再用BiocManager安装GEOquery。
 library(GEOquery)
-gset = getGEO('GSE194261',destdir = '.',
+gset = getGEO('GSE141595',destdir = '.',
               getGPL = FALSE,
-              AnnotGPL = FALSE
+              AnnotGPL = FALSE,
               )
 #提示：用str(getGEO)来查看该函数内所需的对象。
 
@@ -19,14 +21,14 @@ class(gset)
 #注意：gset文件惯例命名为GSE号，文件后缀一定要写，后缀文件属性为.Rdata，为list文件。
 #额外尝试：好像不加后缀也能被load函数提取出来，但是加了后缀更方便理解文件属性，
 #不加后缀虽然也没什么不好，但加上Rdata对我来说更加地海阔天空嘛。
-save(gset,file = 'GSE194261.Rdata')
+save(gset,file = 'GSE141595.Rdata')
 
 
 #第四步：清空列表后尝试读取刚刚存下的文件，文件名目前基本都要加引号。
 rm(list = ls())
 #说明：ls() 函数返回当前环境中的所有对象的名称。list为要删除对象的名称。
 #说明：rm(objectname)为删除特定变量名称的对象。
-load('GSE194261.Rdata')
+load('GSE141595.Rdata')
 
 
 #第五步：提取该列表中的第一个元素。
@@ -43,6 +45,9 @@ class(a)
 #第七步：使用exprs()函数获取表达矩阵。
 #补充：exprs()是Bioconductor中Biobase包中的一个函数，该函数需要对属性为ExpressionSet的对象使用。
 dat=exprs(a)
+
+## 在GSE141595里好像出bug了，但不知道哪有问题，显示No data available in table,目前还解决不了。
+
 
 
 #第八步：使用pData函数来获取临床信息。
@@ -76,7 +81,7 @@ colnames(Table(gpl))
 head(Table(gpl)[,c(1,6,7,8)]) 
 write.csv(Table(gpl)[,c(1,6,7,8)],"GPL17077.csv")
 ids=read.csv('GPL17077.csv')
-GSE_194261_ids = ids
+GSE_141595_ids = ids
 #验证：可以再去raw_exprset里面查看一下，随便找一个id复制，去ids里面ctrlF一下，看看有没有。
 #针对性结果：成功，还是这个方法好用，下次都可以直接用这个方法了。
 
@@ -91,7 +96,7 @@ dat <- dat[rownames(dat)%in% ids$ID,]
 #第十四步：替换ids。
 #内核：这一步其实就是把表里的行名从平台id换成gene_symbol。
 rownames(dat)=ids[match(rownames(dat),ids$ID),4]
-save(dat,file = 'GSE194261_idtransed_exprSet')
+save(dat,file = 'GSE141595_idtransed_exprSet')
 
 
 
@@ -105,7 +110,7 @@ rm(list = ls())
 
 
 #第一步：读取记忆。
-load('GSE194261_idtransed_exprSet')
+load('GSE141595_idtransed_exprSet')
 #右边点开检查一下，是不是已经转换过ID了。
 
 
